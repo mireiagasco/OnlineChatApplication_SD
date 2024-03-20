@@ -1,0 +1,11 @@
+# To start rabbitMQ:
+# docker run -d --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.13-management
+# http://localhost:15672/#/ - to see if its working
+# docker stop rabbitmq - to stop server
+
+# docker ps -a
+# docker rm NAME
+# docker ps -a
+# docker image ls
+# docker image rm hello-world:latest
+# docker image ls
