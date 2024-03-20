@@ -1,6 +1,8 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+/misc.xml
+/OnlineChatApplication_SD.iml
 # Editor-based HTTP Client requests
 /httpRequests/
 # Datasource local storage ignored files
@@ -8,7 +10,3 @@
 /dataSources.local.xml
 # GitHub Copilot persisted chat sessions
 /copilot/chatSessions
-
-misc.xml
-
-OnlineChatApplication_SD.iml
