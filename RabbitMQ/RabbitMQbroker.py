@@ -17,13 +17,8 @@ def send_message(exchange_name, routing_key, message):
 
     channel.exchange_declare(exchange=exchange_name, exchange_type='direct')
 
-    # Make message persistent by setting delivery_mode to 2
-    properties = pika.BasicProperties(delivery_mode=2)
-
-    channel.basic_publish(exchange=exchange_name, routing_key=routing_key, body=json.dumps(message),
-                          properties=properties)
+    channel.basic_publish(exchange=exchange_name, routing_key=routing_key, body=json.dumps(message))
     print(" [x] Sent %r:%r" % (routing_key, message))
-
 
     connection.close()
 
@@ -37,10 +32,15 @@ def receive_messages(queue_name, callback):
 
     channel.queue_declare(queue=queue_name)
 
-    channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+    try:
+        channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+        print(' [*] Waiting for messages. To exit press CTRL+C')
+        channel.start_consuming()
 
-    print(' [*] Waiting for messages. To exit press CTRL+C')
-    channel.start_consuming()
+    # Manage the program interruption by ctrl+c to avoid errors
+    except KeyboardInterrupt:
+        print('Interrupted, closing connection...')
+        connection.close()
 
 
 # Example callback function to process received messages
