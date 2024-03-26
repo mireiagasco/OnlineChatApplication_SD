@@ -16,7 +16,7 @@ while true; do
     echo "Select an option:"
     echo "1. Execute the client"
     echo "2. Stop the client"
-    # shellcheck disable=SC2162
+    echo "3. Exit"
     read option
 
     case $option in
@@ -25,6 +25,9 @@ while true; do
             ;;
         2)
             stop_client
+            ;;
+        3)
+            exit 0
             ;;
         *)
             echo "Invalid option"

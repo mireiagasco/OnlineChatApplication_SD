@@ -25,6 +25,7 @@ while true; do
     echo "Select an option:"
     echo "1. Start the server"
     echo "2. Stop the server"
+    echo "3. Exit"
     read option
 
     case $option in
@@ -33,6 +34,9 @@ while true; do
             ;;
         2)
             stop_server
+            ;;
+        3)
+            exit 0
             ;;
         *)
             echo "Invalid option"
