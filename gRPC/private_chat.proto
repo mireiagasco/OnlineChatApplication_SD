@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+service PrivateChat {
+    rpc Connect (ConnectRequest) returns (ConnectResponse) {}
+    rpc SendMessage (Message) returns (Empty) {}
+    rpc ReceiveMessage (Empty) returns (Message) {}
+}
+
+message ConnectRequest {
+    string client_id = 1;
+}
+
+message ConnectResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message Message {
+    string sender = 1;
+    string content = 2;
+}
+
+message Empty {}

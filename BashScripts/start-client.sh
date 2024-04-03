@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd ..
+
 # Function to execute the Python file
 execute_main() {
     python3 main.py
