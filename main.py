@@ -1,32 +1,54 @@
 import subprocess
+import threading
+
 from colorama import init, Fore
-import grpc
 import sys
 import os
+
+from gRPC.grpc_client import PrivateChatClient
 
 # Get the absolute path to the directory containing the module
 module_dir = os.path.abspath("gRPC")
 # Add the directory to the Python path
 sys.path.append(module_dir)
+from gRPC.grpc_server import register_user_info, serve
+from Redis.NameServer import NameServer
 
-from gRPC.private_chat_pb2_grpc import PrivateChatStub
-from gRPC.private_chat_pb2 import ConnectRequest
-from gRPC.grpc_client import connect_to_server
 
-def private_chat():
-    # Establish a gRPC channel
-    grpc_channel = grpc.insecure_channel('localhost:50051')
-    stub = PrivateChatStub(grpc_channel)
+def private_chat(username):
 
-    # Connect to the server
-    response = stub.Connect(ConnectRequest())
+    # Start the gRPC server in a separate thread
+    #server_thread = threading.Thread(target=serve)
+    #server_thread.start()
+
+    info = register_user_info(username)
+    ip_address = info['ip']
+    port = info['port']
+    id = info['id']
 
     # Display the assigned ID
-    print(response.message)
+    print('Client Registered Successfully!')
+    print('ID: ', id)
+    print('IP Address: ', ip_address)
+    print('Port: ', port)
 
-    #Ask for the target
+    # Ask for the target
     target_id = input("Enter the target ID: ")
-    connect_to_server(target_id)
+    connection_params = NameServer.get_connection_params(name_server, chat_id=target_id)
+    print(connection_params)
+    try:
+        target_ip = connection_params[b'ip_address'].decode()
+        target_port = connection_params[b'port']
+        target_username = connection_params[b'username'].decode()
+
+        # Create gRPC client
+        grpc_client = PrivateChatClient(username,target_id, target_username)
+        grpc_client.connect_to_server(target_ip, target_port)
+    except KeyError as e:
+        print('Client with ID ', target_id, ' not registered')
+
+
+
 
 def subscribe_to_group_chat(group_chat_id):
     print("Subscribing to group chat {}...".format(group_chat_id))
@@ -52,7 +74,7 @@ def access_insult_channel():
     print("Accessing insult channel...")
     # Placeholder for accessing insult channel logic
 
-def show_options():
+def show_options(username):
     while True:
         print("\n" + Fore.CYAN + "Options:" + Fore.RESET)
         print("1. " + Fore.MAGENTA + "Connect to chat" + Fore.RESET)
@@ -65,7 +87,7 @@ def show_options():
         choice = input(Fore.YELLOW + "Enter your choice: " + Fore.RESET)
 
         if choice == "1":
-            private_chat()
+            private_chat(username)
         elif choice == "2":
             group_chat_id = input("Enter the group chat id: ")
             subscribe_to_group_chat(group_chat_id)
@@ -91,9 +113,10 @@ class Client:
         print(Fore.GREEN + "Welcome to the Chat Client!" + Fore.RESET)
         self.username = input(Fore.YELLOW + "Enter your username: " + Fore.RESET)
         print("Welcome, {}!".format(self.username))
-        show_options()
+        show_options(self.username)
 
 
 if __name__ == "__main__":
     client = Client()
+    name_server = NameServer()
     client.start()

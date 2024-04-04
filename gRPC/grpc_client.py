@@ -1,64 +1,49 @@
 import grpc
+import os
+import sys
+# Get the absolute path to the directory containing the module
+module_dir = os.path.abspath("gRPC")
+# Add the directory to the Python path
+sys.path.append(module_dir)
 import private_chat_pb2
 import private_chat_pb2_grpc
 from Redis.NameServer import NameServer
+from Interfaces.PrivateChatApp import PrivateChatApp
 
 # Initialize NameServer instance
 name_server = NameServer()
 
-def connect_to_server(target_id):
-    # Retrieve connection parameters associated with the target_id from the name server
-    connection_params = name_server.get_connection_params(target_id)
+class PrivateChatClient:
+    def __init__(self, username, target_id, target_username):
+        self.client_id = target_id
+        self.username = username
+        self.target_username = target_username
+        self.stub = None
+        self.chat_ui = PrivateChatApp(self.username, target_username, self)
+        self.chat_ui.mainloop()
+        self.connect_to_server(target_id, target_username)
 
-    if connection_params:
-        # Extract IP address and port from connection parameters
-        ip_address = connection_params.get('ip_address')
-        port = connection_params.get('port')
-
-        # Establish gRPC channel
+    def connect_to_server(self, ip_address, port):
         channel = grpc.insecure_channel(f"{ip_address}:{port}")
-        stub = private_chat_pb2_grpc.PrivateChatStub(channel)
+        self.stub = private_chat_pb2_grpc.PrivateChatStub(channel)
+        response = self.stub.Connect(private_chat_pb2.ConnectRequest(client_id=self.client_id))
+        self.chat_ui.display_message(response.message)
 
-        # Implement logic to handle response
-        response = stub.Connect(private_chat_pb2.ConnectRequest())
-        print(response.message)  # Handle the response message
-    else:
-        print("Chat not found or connection details not available.")
+    def send_message(self, message):
+        if self.stub:
+            self.stub.SendMessage(private_chat_pb2.Message(sender=self.client_id, content=message))
+        else:
+            self.chat_ui.display_message("Error: Not connected to server.")
+    def receive_messages(self):
+        while True:
+            try:
+                response = self.stub.ReceiveMessage(private_chat_pb2.Empty())
+                # Display the received message in the UI
+                self.chat_ui.receive_message(f"{response.sender_id}: {response.content}")
+            except Exception as e:
+                self.chat_ui.display_message(f"Error receiving message: {e}")
+                break
 
-def send_message(target_id, sender, content):
-    # Retrieve connection parameters associated with the target_id from the name server
-    connection_params = name_server.get_connection_params(target_id)
 
-    if connection_params:
-        # Extract IP address and port from connection parameters
-        ip_address = connection_params.get('ip_address')
-        port = connection_params.get('port')
 
-        # Establish gRPC channel
-        channel = grpc.insecure_channel(f"{ip_address}:{port}")
-        stub = private_chat_pb2_grpc.PrivateChatStub(channel)
 
-        # Create message
-        message = private_chat_pb2.Message(sender=sender, content=content)
-        stub.SendMessage(message)
-    else:
-        print("Chat not found or connection details not available.")
-
-def receive_message(target_id):
-    # Retrieve connection parameters associated with the target_id from the name server
-    connection_params = name_server.get_connection_params(target_id)
-
-    if connection_params:
-        # Extract IP address and port from connection parameters
-        ip_address = connection_params.get('ip_address')
-        port = connection_params.get('port')
-
-        # Establish gRPC channel
-        channel = grpc.insecure_channel(f"{ip_address}:{port}")
-        stub = private_chat_pb2_grpc.PrivateChatStub(channel)
-
-        # Receive message
-        message = stub.ReceiveMessage(private_chat_pb2.Empty())
-        print(f"Message from {message.sender}: {message.content}")
-    else:
-        print("Chat not found or connection details not available.")

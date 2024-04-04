@@ -8,6 +8,9 @@ service PrivateChat {
 
 message ConnectRequest {
     string client_id = 1;
+    string ip_address = 2;
+    int32 port = 3;
+    string username = 4;
 }
 
 message ConnectResponse {
