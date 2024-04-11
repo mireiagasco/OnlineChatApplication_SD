@@ -28,7 +28,7 @@ class PrivateChatApp(tk.Tk):
         message = self.message_entry.get()
         if message:
             self.display_message(f"{self.username}: {message}", sent=True)
-
+            print("Message sent (UI)")
             # Call the send_message method of the PrivateChatClient to send the message via gRPC
             self.private_chat_client.send_message(message)
 

@@ -1,54 +1,12 @@
 import subprocess
-import threading
-
 from colorama import init, Fore
-import sys
-import os
-
 from gRPC.grpc_client import PrivateChatClient
-
-# Get the absolute path to the directory containing the module
-module_dir = os.path.abspath("gRPC")
-# Add the directory to the Python path
-sys.path.append(module_dir)
-from gRPC.grpc_server import register_user_info, serve
 from Redis.NameServer import NameServer
 
 
 def private_chat(username):
-
-    # Start the gRPC server in a separate thread
-    #server_thread = threading.Thread(target=serve)
-    #server_thread.start()
-
-    info = register_user_info(username)
-    ip_address = info['ip']
-    port = info['port']
-    id = info['id']
-
-    # Display the assigned ID
-    print('Client Registered Successfully!')
-    print('ID: ', id)
-    print('IP Address: ', ip_address)
-    print('Port: ', port)
-
-    # Ask for the target
-    target_id = input("Enter the target ID: ")
-    connection_params = NameServer.get_connection_params(name_server, chat_id=target_id)
-    print(connection_params)
-    try:
-        target_ip = connection_params[b'ip_address'].decode()
-        target_port = connection_params[b'port']
-        target_username = connection_params[b'username'].decode()
-
-        # Create gRPC client
-        grpc_client = PrivateChatClient(username,target_id, target_username)
-        grpc_client.connect_to_server(target_ip, target_port)
-    except KeyError as e:
-        print('Client with ID ', target_id, ' not registered')
-
-
-
+    grpc_client = PrivateChatClient(username)
+    grpc_client.receive_messages()
 
 def subscribe_to_group_chat(group_chat_id):
     print("Subscribing to group chat {}...".format(group_chat_id))

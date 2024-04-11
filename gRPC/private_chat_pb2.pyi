@@ -25,12 +25,14 @@ class ConnectResponse(_message.Message):
     def __init__(self, success: bool = ..., message: _Optional[str] = ...) -> None: ...
 
 class Message(_message.Message):
-    __slots__ = ("sender", "content")
+    __slots__ = ("sender", "destination", "content")
     SENDER_FIELD_NUMBER: _ClassVar[int]
+    DESTINATION_FIELD_NUMBER: _ClassVar[int]
     CONTENT_FIELD_NUMBER: _ClassVar[int]
     sender: str
+    destination: str
     content: str
-    def __init__(self, sender: _Optional[str] = ..., content: _Optional[str] = ...) -> None: ...
+    def __init__(self, sender: _Optional[str] = ..., destination: _Optional[str] = ..., content: _Optional[str] = ...) -> None: ...
 
 class Empty(_message.Message):
     __slots__ = ()
