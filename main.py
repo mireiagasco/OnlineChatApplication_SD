@@ -1,12 +1,18 @@
 import subprocess
+import threading
+
 from colorama import init, Fore
+from Interfaces.PrivateChatApp import PrivateChatApp
 from gRPC.grpc_client import PrivateChatClient
 from Redis.NameServer import NameServer
 
 
 def private_chat(username):
     grpc_client = PrivateChatClient(username)
-    grpc_client.receive_messages()
+    grpc_client.connect_to_server()
+    target_username = grpc_client.start_chat()
+    chat_ui = PrivateChatApp(username, target_username, grpc_client)
+    chat_ui.mainloop()
 
 def subscribe_to_group_chat(group_chat_id):
     print("Subscribing to group chat {}...".format(group_chat_id))

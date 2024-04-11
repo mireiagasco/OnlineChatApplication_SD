@@ -2,15 +2,15 @@ syntax = "proto3";
 
 service PrivateChat {
     rpc Connect (ConnectRequest) returns (ConnectResponse) {}
+    rpc Disconnect (DisconnectRequest) returns (Empty) {}
     rpc SendMessage (Message) returns (Empty) {}
-    rpc ReceiveMessage (Empty) returns (Message) {}
+    rpc ReceiveMessage (Message) returns (Empty) {}
 }
 
 message ConnectRequest {
     string client_id = 1;
     string ip_address = 2;
     int32 port = 3;
-    string username = 4;
 }
 
 message ConnectResponse {
@@ -18,9 +18,13 @@ message ConnectResponse {
     string message = 2;
 }
 
+message DisconnectRequest {
+    string client_id = 1;
+}
+
 message Message {
-    string sender = 1;
-    string destination = 2;
+    string sender_id = 1;
+    string recipient_id = 2;
     string content = 3;
 }
 

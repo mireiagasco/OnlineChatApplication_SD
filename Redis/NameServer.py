@@ -20,6 +20,9 @@ class NameServer:
         self.redis_conn.hset(chat_id, 'chat_id', chat_id)
         self.redis_conn.hset(chat_id, 'username', username)
 
+    def remove_user(self, user_id):
+        self.redis_conn.delete(user_id)
+
     def get_connection_params(self, chat_id):
         # Retrieve connection parameters associated with chat ID from Redis
         return self.redis_conn.hgetall(chat_id)

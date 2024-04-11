@@ -19,6 +19,11 @@ class PrivateChatStub(object):
                 request_serializer=private__chat__pb2.ConnectRequest.SerializeToString,
                 response_deserializer=private__chat__pb2.ConnectResponse.FromString,
                 )
+        self.Disconnect = channel.unary_unary(
+                '/PrivateChat/Disconnect',
+                request_serializer=private__chat__pb2.DisconnectRequest.SerializeToString,
+                response_deserializer=private__chat__pb2.Empty.FromString,
+                )
         self.SendMessage = channel.unary_unary(
                 '/PrivateChat/SendMessage',
                 request_serializer=private__chat__pb2.Message.SerializeToString,
@@ -26,8 +31,8 @@ class PrivateChatStub(object):
                 )
         self.ReceiveMessage = channel.unary_unary(
                 '/PrivateChat/ReceiveMessage',
-                request_serializer=private__chat__pb2.Empty.SerializeToString,
-                response_deserializer=private__chat__pb2.Message.FromString,
+                request_serializer=private__chat__pb2.Message.SerializeToString,
+                response_deserializer=private__chat__pb2.Empty.FromString,
                 )
 
 
@@ -35,6 +40,12 @@ class PrivateChatServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Connect(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Disconnect(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -60,6 +71,11 @@ def add_PrivateChatServicer_to_server(servicer, server):
                     request_deserializer=private__chat__pb2.ConnectRequest.FromString,
                     response_serializer=private__chat__pb2.ConnectResponse.SerializeToString,
             ),
+            'Disconnect': grpc.unary_unary_rpc_method_handler(
+                    servicer.Disconnect,
+                    request_deserializer=private__chat__pb2.DisconnectRequest.FromString,
+                    response_serializer=private__chat__pb2.Empty.SerializeToString,
+            ),
             'SendMessage': grpc.unary_unary_rpc_method_handler(
                     servicer.SendMessage,
                     request_deserializer=private__chat__pb2.Message.FromString,
@@ -67,8 +83,8 @@ def add_PrivateChatServicer_to_server(servicer, server):
             ),
             'ReceiveMessage': grpc.unary_unary_rpc_method_handler(
                     servicer.ReceiveMessage,
-                    request_deserializer=private__chat__pb2.Empty.FromString,
-                    response_serializer=private__chat__pb2.Message.SerializeToString,
+                    request_deserializer=private__chat__pb2.Message.FromString,
+                    response_serializer=private__chat__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -94,6 +110,23 @@ class PrivateChat(object):
         return grpc.experimental.unary_unary(request, target, '/PrivateChat/Connect',
             private__chat__pb2.ConnectRequest.SerializeToString,
             private__chat__pb2.ConnectResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Disconnect(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/PrivateChat/Disconnect',
+            private__chat__pb2.DisconnectRequest.SerializeToString,
+            private__chat__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -126,7 +159,7 @@ class PrivateChat(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/PrivateChat/ReceiveMessage',
-            private__chat__pb2.Empty.SerializeToString,
-            private__chat__pb2.Message.FromString,
+            private__chat__pb2.Message.SerializeToString,
+            private__chat__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
