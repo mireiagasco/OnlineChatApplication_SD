@@ -7,6 +7,7 @@ class PrivateChatApp(tk.Tk):
         self.private_chat_client = private_chat_client
         self.title(f"Chat with {target_username}")
         self.username = username
+        self.target_username = target_username
 
         # Create scrolled text widget to display messages
         self.chat_history = scrolledtext.ScrolledText(self, wrap=tk.WORD)
@@ -34,7 +35,7 @@ class PrivateChatApp(tk.Tk):
             self.message_entry.delete(0, tk.END)
 
     def receive_message(self, message):
-        self.display_message(message, sent=False)
+        self.display_message(f"{self.target_username}: {message.content}", sent=False)
 
     def display_message(self, message, sent=True):
         tag = "sent" if sent else "received"

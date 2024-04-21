@@ -5,6 +5,9 @@ import socket
 import uuid
 import psutil
 import threading
+import time
+
+from Interfaces.PrivateChatApp import PrivateChatApp
 
 # Get the absolute path to the directory containing the module
 module_dir = os.path.abspath("gRPC")
@@ -50,15 +53,9 @@ class PrivateChatClient:
         self.username = username
         self.client_id = str(uuid.uuid4())  # Generate a random UUID as the client ID
         self.ip_address = socket.gethostbyname(socket.gethostname())
-        self.port = find_free_port()
-        self.target_id = None
-        self.server = None
-        self.target_port = None
-        self.target_ip = None
-        self.target_username = None
         self.stub = None
+        self.port = find_free_port()
         self.show_user_info()
-        self.stream = None
 
     def connect_to_server(self):
         name_server.register_user(self.username, self.client_id, self.ip_address, self.port)
@@ -79,7 +76,6 @@ class PrivateChatClient:
     def send_message(self, message):
         if self.stub:
             try:
-                # Attempt to send the message only if the connection is established
                 self.stub.SendMessage(
                     private_chat_pb2.Message(sender_id=self.client_id, recipient_id=self.target_id, content=message))
             except Exception as e:
@@ -88,19 +84,20 @@ class PrivateChatClient:
             print("Error: Not connected to server.")
 
     def receive_messages(self):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind(('localhost', self.port))
-            s.listen()
-            print(f"Listening for incoming messages on {socket.gethostbyname(socket.gethostname())}:"
-                  f"{get_listening_port(os.getpid())}")
-            while True:
-                conn, addr = s.accept()
-                with conn:
-                    print('Connected by', addr)
-                    data = conn.recv(1024)
-                    if not data:
-                        break
-                    print("Received message:", data.decode())
+        while self.running:
+            time.sleep(1)
+            try:
+                request = private_chat_pb2.ReceiveMessageRequest(
+                    sender_id=self.target_id,
+                    recipient_id=self.client_id
+                )
+                response = self.stub.ReceiveMessage(request)
+
+                if response.HasField('message'):  # Check if the response contains a message
+                    message = response.message
+                    self.chat_ui.receive_message(message)
+            except Exception as e:
+                print(f"Error receiving messages: {e}")
 
     def show_user_info(self):
         print("Connected with ID: ", self.client_id)
@@ -123,8 +120,11 @@ class PrivateChatClient:
         self.target_port = connection_params[b'port']
         self.target_username = connection_params[b'username'].decode()
 
+        self.running = True
         self.listen_thread = threading.Thread(target=self.receive_messages)
         self.listen_thread.daemon = True  # Daemonize the thread so it exits when the main thread exits
         self.listen_thread.start()
 
-        return self.target_username
+        self.chat_ui = PrivateChatApp(self.username, self.target_username, self)
+        self.chat_ui.mainloop()
+        self.running = False

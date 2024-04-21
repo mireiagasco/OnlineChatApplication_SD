@@ -31,8 +31,8 @@ class PrivateChatStub(object):
                 )
         self.ReceiveMessage = channel.unary_unary(
                 '/PrivateChat/ReceiveMessage',
-                request_serializer=private__chat__pb2.Message.SerializeToString,
-                response_deserializer=private__chat__pb2.Empty.FromString,
+                request_serializer=private__chat__pb2.ReceiveMessageRequest.SerializeToString,
+                response_deserializer=private__chat__pb2.ReceiveMessageResponse.FromString,
                 )
 
 
@@ -83,8 +83,8 @@ def add_PrivateChatServicer_to_server(servicer, server):
             ),
             'ReceiveMessage': grpc.unary_unary_rpc_method_handler(
                     servicer.ReceiveMessage,
-                    request_deserializer=private__chat__pb2.Message.FromString,
-                    response_serializer=private__chat__pb2.Empty.SerializeToString,
+                    request_deserializer=private__chat__pb2.ReceiveMessageRequest.FromString,
+                    response_serializer=private__chat__pb2.ReceiveMessageResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -159,7 +159,7 @@ class PrivateChat(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/PrivateChat/ReceiveMessage',
-            private__chat__pb2.Message.SerializeToString,
-            private__chat__pb2.Empty.FromString,
+            private__chat__pb2.ReceiveMessageRequest.SerializeToString,
+            private__chat__pb2.ReceiveMessageResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

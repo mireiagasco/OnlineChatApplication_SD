@@ -15,6 +15,8 @@ name_server = NameServer()
 
 
 class PrivateChatService(private_chat_pb2_grpc.PrivateChatServicer):
+    def __init__(self):
+        self.messages = []
 
     def Connect(self, request, context):
         return private_chat_pb2.ConnectResponse(success=True, message=f'Connected with ID: {request.client_id}')
@@ -25,35 +27,32 @@ class PrivateChatService(private_chat_pb2_grpc.PrivateChatServicer):
         destination_id = request.recipient_id
         message_content = request.content
 
-        # Retrieve connection parameters associated with the destination ID from the NameServer
-        connection_params = name_server.get_connection_params(destination_id)
-        if not connection_params:
-            # If destination ID is not found in the NameServer, return an error response
-            return private_chat_pb2.Empty()
+        self.messages.append({"sender": sender_id, "destination": destination_id, "message": message_content})
+        return private_chat_pb2.Empty()  # Return an empty response
 
-        # Extract IP address and port from the connection parameters
-        destination_ip = connection_params[b'ip_address'].decode()
-        destination_port = int(connection_params[b'port'])
-        # Send the message to the destination client using the obtained connection parameters
-        try:
-            # Create a gRPC channel to the destination client
-            channel = grpc.insecure_channel(f"{destination_ip}:{destination_port}")
-            stub = private_chat_pb2_grpc.PrivateChatStub(channel)
+    def ReceiveMessage(self, request, context):
+        sender_id = request.sender_id
+        recipient_id = request.recipient_id
+        matching_message = None
 
-            # Create and send the message
-            message = private_chat_pb2.Message(sender_id=sender_id, recipient_id=destination_id, content=message_content)
-            stub.ReceiveMessage(message)
+        for message in self.messages:
+            if message['sender'] == sender_id and message['destination'] == recipient_id:
+                matching_message = message
+                self.messages.remove(message)  # Remove the matching message from the queue
+                break
 
-            # Return an empty response as acknowledgment
-            return private_chat_pb2.Empty()
-
-        except Exception as e:
-            # Handle any errors that occur during message transmission
-            print(f"Error sending message to client {destination_id}: {e}")
-            return private_chat_pb2.Empty()
-
-    def ReceiveMessage(self, request_iterator, context):
-        return private_chat_pb2.Empty()
+        if matching_message:
+            return private_chat_pb2.ReceiveMessageResponse(
+                message=private_chat_pb2.Message(
+                    sender_id=matching_message['sender'],
+                    recipient_id=matching_message['destination'],
+                    content=matching_message['message']
+                )
+            )
+        else:
+            return private_chat_pb2.ReceiveMessageResponse(
+                empty=private_chat_pb2.Empty()  # Return an empty response if no matching message is found
+            )
 
 
 def serve():
