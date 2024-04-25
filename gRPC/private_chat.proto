@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+service PrivateChat {
+    rpc Connect (ConnectRequest) returns (ConnectResponse) {}
+    rpc Disconnect (DisconnectRequest) returns (Empty) {}
+    rpc SendMessage (Message) returns (Empty) {}
+    rpc ReceiveMessage (ReceiveMessageRequest) returns (ReceiveMessageResponse) {}
+}
+
+message ConnectRequest {
+    string client_id = 1;
+}
+
+message ConnectResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message DisconnectRequest {
+    string client_id = 1;
+}
+
+message Message {
+    string sender_id = 1;
+    string recipient_id = 2;
+    string content = 3;
+}
+
+message ReceiveMessageRequest {
+    string sender_id = 1;
+    string recipient_id = 2;
+}
+
+message ReceiveMessageResponse {
+    oneof response {
+        Message message = 1;
+        Empty empty = 2;
+        DisconnectMessage disconnect_message = 3;
+    }
+}
+
+message Empty {}
+message DisconnectMessage {}
