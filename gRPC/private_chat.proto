@@ -9,8 +9,6 @@ service PrivateChat {
 
 message ConnectRequest {
     string client_id = 1;
-    string ip_address = 2;
-    int32 port = 3;
 }
 
 message ConnectResponse {
@@ -37,7 +35,9 @@ message ReceiveMessageResponse {
     oneof response {
         Message message = 1;
         Empty empty = 2;
+        DisconnectMessage disconnect_message = 3;
     }
 }
 
 message Empty {}
+message DisconnectMessage {}

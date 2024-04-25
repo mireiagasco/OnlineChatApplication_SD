@@ -1,9 +1,6 @@
 import grpc
 import os
 import sys
-import socket
-import uuid
-import psutil
 import threading
 import time
 
@@ -22,62 +19,34 @@ from Redis.NameServer import NameServer
 name_server = NameServer()
 
 
-def get_listening_port(process_id):
-    """Get the listening port of a process."""
-    try:
-        # Get the process by its ID
-        process = psutil.Process(process_id)
-
-        # Get the connections of the process
-        connections = process.connections()
-
-        # Filter connections that are listening
-        listening_ports = [conn.laddr.port for conn in connections if conn.status == psutil.CONN_LISTEN]
-
-        return listening_ports
-
-    except psutil.NoSuchProcess:
-        return None
-
-# Function to find a free port
-def find_free_port():
-    # Create a socket and bind it to a random port
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(('localhost', 0))  # Bind to localhost and a random port
-        _, port = s.getsockname()  # Get the assigned port
-    return port
-
 
 class PrivateChatClient:
-    def __init__(self, username):
+    def __init__(self, username, user_id):
         self.username = username
-        self.client_id = str(uuid.uuid4())  # Generate a random UUID as the client ID
-        self.ip_address = socket.gethostbyname(socket.gethostname())
+        self.user_id = user_id
         self.stub = None
-        self.port = find_free_port()
         self.show_user_info()
 
     def connect_to_server(self):
-        name_server.register_user(self.username, self.client_id, self.ip_address, self.port)
         try:
             # Connect to the server using the appropriate IP address and port
             channel = grpc.insecure_channel('127.0.0.1:50051')
             self.stub = private_chat_pb2_grpc.PrivateChatStub(channel)
+            connect_request = private_chat_pb2.ConnectRequest(client_id=self.user_id)
+            self.stub.Connect(connect_request)
         except Exception as e:
             # Display an error message if the connection fails
             print(f"Error connecting to server: {e}")
 
     def disconnect(self):
-        name_server.remove_user(self.client_id)
-        request = private_chat_pb2.DisconnectRequest(client_id=self.client_id)
+        request = private_chat_pb2.DisconnectRequest(client_id=self.user_id)
         self.stub.Disconnect(request)
-        print("Disconnected.")
 
     def send_message(self, message):
         if self.stub:
             try:
                 self.stub.SendMessage(
-                    private_chat_pb2.Message(sender_id=self.client_id, recipient_id=self.target_id, content=message))
+                    private_chat_pb2.Message(sender_id=self.user_id, recipient_id=self.target_id, content=message))
             except Exception as e:
                 print(f"Error sending message: {e}")
         else:
@@ -89,21 +58,21 @@ class PrivateChatClient:
             try:
                 request = private_chat_pb2.ReceiveMessageRequest(
                     sender_id=self.target_id,
-                    recipient_id=self.client_id
+                    recipient_id=self.user_id
                 )
                 response = self.stub.ReceiveMessage(request)
 
                 if response.HasField('message'):  # Check if the response contains a message
                     message = response.message
                     self.chat_ui.receive_message(message)
+                if response.HasField('disconnect_message'):  # If we receive a disconnectMessage
+                    self.chat_ui.receive_message(disconnect=True)
+
             except Exception as e:
                 print(f"Error receiving messages: {e}")
 
     def show_user_info(self):
-        print("Connected with ID: ", self.client_id)
-        print("Connection info:\n"
-              "\tIP address: ", self.ip_address,
-              "\n\tPort: ", self.port)
+        print("Connected with ID: ", self.user_id)
 
     def start_chat(self):
         # Ask for the target

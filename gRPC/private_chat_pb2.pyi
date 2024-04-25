@@ -5,14 +5,10 @@ from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Opti
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class ConnectRequest(_message.Message):
-    __slots__ = ("client_id", "ip_address", "port")
+    __slots__ = ("client_id",)
     CLIENT_ID_FIELD_NUMBER: _ClassVar[int]
-    IP_ADDRESS_FIELD_NUMBER: _ClassVar[int]
-    PORT_FIELD_NUMBER: _ClassVar[int]
     client_id: str
-    ip_address: str
-    port: int
-    def __init__(self, client_id: _Optional[str] = ..., ip_address: _Optional[str] = ..., port: _Optional[int] = ...) -> None: ...
+    def __init__(self, client_id: _Optional[str] = ...) -> None: ...
 
 class ConnectResponse(_message.Message):
     __slots__ = ("success", "message")
@@ -47,13 +43,19 @@ class ReceiveMessageRequest(_message.Message):
     def __init__(self, sender_id: _Optional[str] = ..., recipient_id: _Optional[str] = ...) -> None: ...
 
 class ReceiveMessageResponse(_message.Message):
-    __slots__ = ("message", "empty")
+    __slots__ = ("message", "empty", "disconnect_message")
     MESSAGE_FIELD_NUMBER: _ClassVar[int]
     EMPTY_FIELD_NUMBER: _ClassVar[int]
+    DISCONNECT_MESSAGE_FIELD_NUMBER: _ClassVar[int]
     message: Message
     empty: Empty
-    def __init__(self, message: _Optional[_Union[Message, _Mapping]] = ..., empty: _Optional[_Union[Empty, _Mapping]] = ...) -> None: ...
+    disconnect_message: DisconnectMessage
+    def __init__(self, message: _Optional[_Union[Message, _Mapping]] = ..., empty: _Optional[_Union[Empty, _Mapping]] = ..., disconnect_message: _Optional[_Union[DisconnectMessage, _Mapping]] = ...) -> None: ...
 
 class Empty(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class DisconnectMessage(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...

@@ -1,5 +1,7 @@
+import time
 import tkinter as tk
 from tkinter import scrolledtext
+
 
 class PrivateChatApp(tk.Tk):
     def __init__(self, username, target_username, private_chat_client, *args, **kwargs):
@@ -24,21 +26,43 @@ class PrivateChatApp(tk.Tk):
         # Apply formatting to tags
         self.chat_history.tag_config("sent", justify="right")
         self.chat_history.tag_config("received", justify="left")
+        self.chat_history.tag_config("disconnect", justify="center")
+
+        # Bind the window close event to a function
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def send_message(self):
         message = self.message_entry.get()
         if message:
-            self.display_message(f"{self.username}: {message}", sent=True)
+            self.display_message(f"{self.username}: {message}", status='sent')
             # Call the send_message method of the PrivateChatClient to send the message via gRPC
             self.private_chat_client.send_message(message)
 
             self.message_entry.delete(0, tk.END)
 
-    def receive_message(self, message):
-        self.display_message(f"{self.target_username}: {message.content}", sent=False)
+    def receive_message(self, message=None, disconnect=False):
+        if disconnect:
+            self.display_message(f"User {self.target_username} disconnected", status='disconnect')
+            self.display_message("Disconnecting...", status='disconnect')
+            time.sleep(3)
+            self.on_close()
+        else:
+            self.display_message(f"{self.target_username}: {message.content}", status='received')
 
-    def display_message(self, message, sent=True):
-        tag = "sent" if sent else "received"
+    def display_message(self, message, status):
+        tag = None
+
+        if status == 'sent':
+            tag = "sent"
+        if status == 'received':
+            tag = "received"
+        if status == 'disconnect':
+            tag = "disconnect"
+
         # Insert the message with the corresponding tag
         self.chat_history.insert(tk.END, message + '\n', tag)
         self.chat_history.see(tk.END)
+
+    def on_close(self):
+        self.private_chat_client.disconnect()
+        self.destroy()
