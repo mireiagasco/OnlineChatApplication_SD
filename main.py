@@ -1,7 +1,11 @@
 import subprocess
 import socket
 import uuid
+import json
+
 from colorama import init, Fore
+
+from Interfaces.GroupChatApp import GroupChatApp
 from gRPC.grpc_client import PrivateChatClient
 from Redis.NameServer import NameServer
 
@@ -20,10 +24,10 @@ def private_chat(client_info):
     grpc_client.connect_to_server()
     grpc_client.start_chat()
 
-
-def subscribe_to_group_chat(group_chat_id):
-    print("Subscribing to group chat {}...".format(group_chat_id))
-    # Placeholder for actual subscription logic
+def connect_to_group_chat(client_info, spectator):
+    group_chat_id = input("Enter the group chat id: ")
+    app = GroupChatApp(client_info.username, client_info.client_id, group_chat_id, spectator)
+    app.mainloop()
 
 
 def discover_chats():
@@ -45,6 +49,7 @@ def access_insult_channel():
     print("Accessing insult channel...")
     # Placeholder for accessing insult channel logic
 
+
 def show_options(client_inst):
     while True:
         print("\n" + Fore.CYAN + "Options:" + Fore.RESET)
@@ -60,8 +65,15 @@ def show_options(client_inst):
         if choice == "1":
             private_chat(client_inst)
         elif choice == "2":
-            group_chat_id = input("Enter the group chat id: ")
-            subscribe_to_group_chat(group_chat_id)
+            print("\n" + Fore.CYAN + "Options:" + Fore.RESET)
+            print("1. " + Fore.MAGENTA + "Subscribe to group chat (receive)" + Fore.RESET)
+            print("2. " + Fore.MAGENTA + "Connect to group chat (receive + send)" + Fore.RESET)
+            option = input(Fore.YELLOW + "Enter your choice: " + Fore.RESET)
+            if option == "1":
+                connect_to_group_chat(client_inst, spectator=True)
+            elif option == "2":
+                connect_to_group_chat(client_inst, spectator=False)
+
         elif choice == "3":
             discover_chats()
         elif choice == "4":
