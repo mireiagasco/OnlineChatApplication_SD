@@ -36,6 +36,7 @@ class GroupChatApp(tk.Tk):
         self.title(f"Group Chat {chat_id} - User: {username}")
         self.username = username
         self.chat_id = chat_id
+        self.client_id = client_id
         self.spectator = spectator
 
         # Create scrolled text widget to display messages
@@ -109,6 +110,10 @@ class GroupChatApp(tk.Tk):
         except Exception as e:
             print(f"Error consuming messages: {e}")
         finally:
+            # Delete the queue
+            queue_name = f"chat_{self.chat_id}_{self.client_id}"
+            channel.queue_delete(queue=queue_name)
+
             # Close the channel and connection
             channel.close()
 
