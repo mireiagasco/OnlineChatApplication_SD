@@ -1,5 +1,6 @@
 import redis
 
+
 class NameServer:
     _instance = None  # Singleton instance variable
 
@@ -26,3 +27,16 @@ class NameServer:
     def get_connection_params(self, chat_id):
         # Retrieve connection parameters associated with chat ID from Redis
         return self.redis_conn.hgetall(chat_id)
+
+    def get_connected_clients(self):
+        # Retrieve all connected clients from Redis
+        connected_clients = {}
+        for chat_id in self.redis_conn.scan_iter():
+            connection_params = self.redis_conn.hgetall(chat_id)
+            connected_clients[chat_id] = {
+                'ip_address': connection_params[b'ip_address'].decode(),
+                'port': int(connection_params[b'port']),
+                'username': connection_params[b'username'].decode()
+            }
+        return connected_clients
+

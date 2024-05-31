@@ -16,7 +16,7 @@ start_server() {
      # Change back to the original directory
     cd "$SCRIPT_DIR" || exit
 
-    echo "Server started."
+    echo "gRPC server started."
     sleep 10
     echo "Opening RabbitMQ management interface in your default browser..."
     xdg-open "http://localhost:15672/#/"
@@ -30,7 +30,7 @@ stop_server() {
     docker stop REDIS
     # Stop gRPC server if it's running
     pkill -f "python grpc_server.py"
-    echo "Server stopped."
+    echo "gRPC server stopped."
 }
 
 # Main loop
