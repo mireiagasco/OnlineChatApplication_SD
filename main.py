@@ -11,6 +11,7 @@ from Interfaces.GroupChatApp import GroupChatApp
 from RabbitMQ import RabbitMQbroker
 from gRPC.grpc_client import PrivateChatClient
 from Redis.NameServer import NameServer
+from Interfaces.InsultChatApp import InsultChatApp
 
 
 # Function to find a free port
@@ -67,9 +68,9 @@ def test_redis():
         print("Error: Redis test file not found.")
 
 
-def access_insult_channel():
-    print("Accessing insult channel...")
-    # Placeholder for accessing insult channel logic
+def access_insult_channel(client_info):
+    app = InsultChatApp(client_info.username, client_info.client_id)
+    app.start()
 
 
 def show_options(client_inst):
@@ -105,7 +106,6 @@ def show_options(client_inst):
                     connect_to_group_chat(client_inst, spectator=False, persistent=False)
                 elif option2 == "2":
                     connect_to_group_chat(client_inst, spectator=False, persistent=True)
-
         elif choice == "3":
             print("\n" + Fore.CYAN + "Discovery Options:" + Fore.RESET)
             print("1. " + Fore.MAGENTA + "Discover chats via Redis" + Fore.RESET)
@@ -118,9 +118,8 @@ def show_options(client_inst):
                 discover_chats_redis()
             elif choice == "2":
                 discover_chats_rabbitmq(client_inst)
-
         elif choice == "4":
-            access_insult_channel()
+            access_insult_channel(client_inst)
         elif choice == "5":
             test_redis()
         elif choice == "6":
