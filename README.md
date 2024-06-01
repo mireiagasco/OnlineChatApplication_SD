@@ -31,7 +31,7 @@ achieved creating a history queue that will store all messages sent to persisten
 that were sent to the chat before its arrival.
 
 Example of a group chat with three users:
-![image](https://github.com/Gpascual11/OnlineChatApplication_SD/assets/63343593/bce7da47-b1c8-4877-be47-8e82cb5c90b3)
+![image](https://github.com/Gpascual11/OnlineChatApplication_SD/assets/63343593/a47eb0dc-6b08-4a75-b0fd-472b406da906)
 
 
 
