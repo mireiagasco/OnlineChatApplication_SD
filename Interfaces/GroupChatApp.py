@@ -3,6 +3,7 @@ from tkinter import scrolledtext
 import threading
 import json
 
+from RabbitMQ import RabbitMQBroker
 from RabbitMQ.RabbitMQBroker import send_message, receive_messages
 
 # Connection parameters for RabbitMQ
@@ -54,6 +55,8 @@ class GroupChatApp(tk.Tk):
 
     def close_window(self):
         self.stop_event.set()
+        queue_name = f"chat_{self.chat_id}_{self.client_id}"
+        RabbitMQBroker.remove_queue(queue_name)
         self.destroy()
 
     def send_message(self):

@@ -1,5 +1,5 @@
 # RabbitMQBroker.py
-import time
+
 import pika
 import json
 import threading
@@ -13,13 +13,6 @@ EXCHANGE_NAME_CHAT = 'group_chats'
 EXCHANGE_NAME_DISCOVERY = 'chat_discovery'
 DISCOVERY_QUEUE_NAME = 'discovery_queue'
 EXCHANGE_NAME_DIRECT = 'direct_exchange'
-
-def initialize_connection():
-    global connection, channel
-    connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host=RABBITMQ_HOST, port=RABBITMQ_PORT,
-        credentials=pika.PlainCredentials(RABBITMQ_USERNAME, RABBITMQ_PASSWORD)))
-    channel = connection.channel()
 
 # Function to send a message to the RabbitMQ exchange
 def send_message(exchange_name, routing_key, message, persistent=False):
@@ -111,3 +104,10 @@ def receive_insult(insults_queue, condition):
     channel.basic_consume(queue='task_queue', on_message_callback=callback)
 
     channel.start_consuming()
+
+
+def remove_queue(queue_name):
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
+    channel.queue_delete(queue=queue_name)

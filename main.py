@@ -119,6 +119,10 @@ class Client:
         name_server.remove_user(self.client_id)
         print("User data removed from Redis.")
 
+        # Remove RabbitMQ queue
+        RabbitMQBroker.remove_queue(self.client_id)
+        print("RabbitMQ queue deleted.")
+
     def listen_for_discovery_messages(self):
         info = [self.client_id, self.username, self.ip_address, self.port]
         partial_callback = functools.partial(RabbitMQBroker.handle_discovery_message, client_info=info)
