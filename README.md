@@ -40,6 +40,13 @@ In order to obtain the connection parameters of the connected clients, we have i
 the clients information from the shared memory in the Redis server, while the second one uses the RabbitMQ broker to send a discovery message to all clients, who reply with a 
 direct message to the requesting client with their connection parameters.
 
+Example of discovery with redis:
+![image](https://github.com/Gpascual11/OnlineChatApplication_SD/assets/63343593/9eb34e03-f867-4eb1-85c7-08d868e70722)
+
+Example of discovery using RabbitMQ:
+![image](https://github.com/Gpascual11/OnlineChatApplication_SD/assets/63343593/9fa2bc0a-b8b5-44d6-b575-a6831a6389b8)
+
+
 ## Requirements
 The project is implemented using the following:
 - Python v3.11.8 with grpcio v1.62.1
