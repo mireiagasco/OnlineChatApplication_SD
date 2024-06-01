@@ -3,7 +3,7 @@ import tkinter as tk
 import threading
 from functools import partial
 from threading import Condition
-import RabbitMQ.RabbitMQBroker
+from RabbitMQ.RabbitMQBroker import RabbitMQBroker
 
 
 class InsultChatApp:
@@ -27,7 +27,7 @@ class InsultChatApp:
         self.send_button = tk.Button(self.root, text="Send Insult", command=self.send_insult)
         self.send_button.pack()
 
-        receive_insult_partial = partial(RabbitMQ.RabbitMQBroker.receive_insult, self.insults, self.condition)
+        receive_insult_partial = partial(RabbitMQBroker.receive_insult, self.insults, self.condition)
         threading.Thread(target=receive_insult_partial, daemon=True).start()
 
         # Start a thread to handle insults when added to the queue
@@ -36,7 +36,7 @@ class InsultChatApp:
     def send_insult(self, event=None):
         insult = self.insult_entry.get()
         if insult:
-            RabbitMQ.RabbitMQBroker.send_insult(insult)
+            RabbitMQBroker.send_insult(insult)
             self.insult_entry.delete(0, tk.END)
 
     def receive_insults(self):

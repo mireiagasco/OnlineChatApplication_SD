@@ -3,8 +3,8 @@ from tkinter import scrolledtext
 import threading
 import json
 
-from RabbitMQ import RabbitMQBroker
-from RabbitMQ.RabbitMQBroker import send_message, receive_messages
+from RabbitMQ.RabbitMQBroker import RabbitMQBroker
+
 
 # Connection parameters for RabbitMQ
 RABBITMQ_HOST = 'localhost'
@@ -63,12 +63,12 @@ class GroupChatApp(tk.Tk):
         message = self.message_entry.get()
         if message:
             self.display_message(f"{self.username}: {message}", status='sent')
-            send_message(EXCHANGE_NAME, '', {'sender': self.username, 'content': message}, persistent=self.persistent)
+            RabbitMQBroker.send_message(EXCHANGE_NAME, '', {'sender': self.username, 'content': message}, persistent=self.persistent)
             self.message_entry.delete(0, tk.END)
 
     def receive_messages(self, client_id, persistent):
         queue_name = f"chat_{self.chat_id}_{client_id}"
-        receive_messages(exchange_name='group_chats', queue_name=queue_name, callback=self.callback, persistent=persistent)
+        RabbitMQBroker.receive_messages(exchange_name='group_chats', queue_name=queue_name, callback=self.callback, persistent=persistent)
 
     def callback(self, ch, method, properties, body):
         message = json.loads(body)

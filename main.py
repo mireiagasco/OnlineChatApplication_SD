@@ -8,7 +8,7 @@ from colorama import init, Fore
 
 import UserInteraction
 from Interfaces.GroupChatApp import GroupChatApp
-from RabbitMQ import RabbitMQBroker
+from RabbitMQ.RabbitMQBroker import RabbitMQBroker
 from gRPC.grpc_client import PrivateChatClient
 from Redis.NameServer import NameServer
 from Interfaces.InsultChatApp import InsultChatApp
