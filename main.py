@@ -57,6 +57,7 @@ def discover_chats_rabbitmq(client_info):
     print("Discovering chats via RabbitMQ...")
     RabbitMQBroker.send_discovery_message(client_info.client_id)
     time.sleep(2)
+    print("Discovery complete!")
 
 
 def access_insult_channel(client_info):
@@ -117,22 +118,21 @@ class Client:
         # Remove user data from Redis
         name_server = NameServer()
         name_server.remove_user(self.client_id)
-        print("User data removed from Redis.")
 
         # Remove RabbitMQ queue
         RabbitMQBroker.remove_queue(self.client_id)
-        print("RabbitMQ queue deleted.")
+        RabbitMQBroker.remove_queue(f"discovery_{self.client_id}")
 
     def listen_for_discovery_messages(self):
         info = [self.client_id, self.username, self.ip_address, self.port]
         partial_callback = functools.partial(RabbitMQBroker.handle_discovery_message, client_info=info)
-        RabbitMQBroker.receive_messages(exchange_name='chat_discovery', queue_name="discovery_queue",
-                                        callback=lambda ch, method, properties,
+        RabbitMQBroker.receive_messages(exchange_name='chat_discovery', queue_name=f"discovery_{self.client_id}",
+                                        routing_key='discovery', callback=lambda ch, method, properties,
                                         body: partial_callback(ch, method, properties, body, client_info=info))
 
     def listen_for_private_messages(self):
         RabbitMQBroker.receive_messages(exchange_name='direct_exchange', queue_name=self.client_id,
-                                        callback=RabbitMQBroker.handle_private_message)
+                                        routing_key=self.client_id, callback=RabbitMQBroker.handle_private_message)
 
     def start(self):
         print("Welcome, {}!".format(self.username))
@@ -140,5 +140,6 @@ class Client:
 
 
 if __name__ == "__main__":
+    RabbitMQBroker()
     client = Client()
     client.start()

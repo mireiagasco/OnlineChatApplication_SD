@@ -26,26 +26,32 @@ class RabbitMQBroker:
         channel = connection.channel()
         properties = pika.BasicProperties(delivery_mode=2 if persistent else 1)  # 2 for persistent, 1 for transient
 
-        if exchange_name == RabbitMQBroker.EXCHANGE_NAME_DIRECT:
-            channel.exchange_declare(exchange=exchange_name, exchange_type='direct', durable=persistent)
-        else:
-            channel.exchange_declare(exchange=exchange_name, exchange_type='fanout', durable=persistent)
+        # Determine the exchange type
+        exchange_type = 'direct' if exchange_name in [RabbitMQBroker.EXCHANGE_NAME_DIRECT,
+                                                      RabbitMQBroker.EXCHANGE_NAME_CHAT] else 'fanout'
 
-        channel.basic_publish(exchange=exchange_name, routing_key=routing_key, body=json.dumps(message), properties=properties)
+        channel.exchange_declare(exchange=exchange_name, exchange_type=exchange_type, durable=persistent)
+        channel.basic_publish(exchange=exchange_name, routing_key=routing_key,
+                              body=json.dumps(message), properties=properties)
         connection.close()
 
     @staticmethod
     # Function to receive messages from the RabbitMQ queue
-    def receive_messages(exchange_name, queue_name, callback, persistent=False):
+    def receive_messages(exchange_name, queue_name, routing_key, callback, persistent=False):
         connection = pika.BlockingConnection(pika.ConnectionParameters(
             host=RabbitMQBroker.RABBITMQ_HOST, port=RabbitMQBroker.RABBITMQ_PORT,
             credentials=pika.PlainCredentials(RabbitMQBroker.RABBITMQ_USERNAME, RabbitMQBroker.RABBITMQ_PASSWORD)))
         channel = connection.channel()
 
-        channel.exchange_declare(exchange=exchange_name, exchange_type='direct' if exchange_name == RabbitMQBroker.EXCHANGE_NAME_DIRECT else 'fanout', durable=persistent)
+        # Determine the exchange type
+        exchange_type = 'direct' if exchange_name in [RabbitMQBroker.EXCHANGE_NAME_DIRECT,
+                                                      RabbitMQBroker.EXCHANGE_NAME_CHAT] else 'fanout'
+
+        channel.exchange_declare(exchange=exchange_name,
+                                 exchange_type=exchange_type, durable=persistent)
         result = channel.queue_declare(queue=queue_name, durable=persistent)
         queue_name = result.method.queue
-        channel.queue_bind(exchange=exchange_name, queue=queue_name)
+        channel.queue_bind(exchange=exchange_name, queue=queue_name, routing_key=routing_key)
 
         # Set up the callback function to process messages
         channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
@@ -56,11 +62,13 @@ class RabbitMQBroker:
     @staticmethod
     # Function to send a discovery message to the RabbitMQ exchange
     def send_discovery_message(message):
-        RabbitMQBroker.send_message(RabbitMQBroker.EXCHANGE_NAME_DISCOVERY, RabbitMQBroker.DISCOVERY_QUEUE_NAME, message)
+        RabbitMQBroker.send_message(exchange_name=RabbitMQBroker.EXCHANGE_NAME_DISCOVERY,
+                                    routing_key='discovery', message=message)
 
     @staticmethod
     # Function to handle discovery message
     def handle_discovery_message(ch, method, properties, body, client_info):
+        print(f"Received discovery message at {client_info[1]}")
         # Prepare the response message with client's information
         response_message = {
             'client_id': client_info[0],
@@ -70,7 +78,8 @@ class RabbitMQBroker:
         }
         key = body.decode().strip('"')
         # Send the response message directly to the sender
-        RabbitMQBroker.send_message(exchange_name=RabbitMQBroker.EXCHANGE_NAME_DIRECT, routing_key=key, message=response_message)
+        RabbitMQBroker.send_message(exchange_name=RabbitMQBroker.EXCHANGE_NAME_DIRECT,
+                                    routing_key=key, message=response_message)
 
     @staticmethod
     def handle_private_message(ch, method, properties, body):

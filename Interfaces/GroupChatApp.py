@@ -55,7 +55,7 @@ class GroupChatApp(tk.Tk):
 
     def close_window(self):
         self.stop_event.set()
-        queue_name = f"chat_{self.chat_id}_{self.client_id}"
+        queue_name = f"chat_{self.chat_id}_{self.client_id}_{'persistent' if self.persistent else 'transient'}"
         RabbitMQBroker.remove_queue(queue_name)
         self.destroy()
 
@@ -63,12 +63,17 @@ class GroupChatApp(tk.Tk):
         message = self.message_entry.get()
         if message:
             self.display_message(f"{self.username}: {message}", status='sent')
-            RabbitMQBroker.send_message(EXCHANGE_NAME, '', {'sender': self.username, 'content': message}, persistent=self.persistent)
+            routing_key = f"chat_{self.chat_id}_{'persistent' if self.persistent else 'transient'}"
+            RabbitMQBroker.send_message(EXCHANGE_NAME, routing_key=routing_key,
+                                        message={'sender': self.username, 'content': message},
+                                        persistent=self.persistent)
             self.message_entry.delete(0, tk.END)
 
     def receive_messages(self, client_id, persistent):
-        queue_name = f"chat_{self.chat_id}_{client_id}"
-        RabbitMQBroker.receive_messages(exchange_name='group_chats', queue_name=queue_name, callback=self.callback, persistent=persistent)
+        queue_name = f"chat_{self.chat_id}_{client_id}_{'persistent' if persistent else 'transient'}"
+        routing_key = f"chat_{self.chat_id}_{'persistent' if persistent else 'transient'}"
+        RabbitMQBroker.receive_messages(exchange_name='group_chats', queue_name=queue_name, routing_key=routing_key,
+                                        callback=self.callback, persistent=persistent)
 
     def callback(self, ch, method, properties, body):
         message = json.loads(body)
