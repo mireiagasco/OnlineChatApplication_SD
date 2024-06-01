@@ -1,6 +1,15 @@
 # Application Chat Documentation
 This project has been developed for the Distributed Systems course (URV, 2024) and implements a chat system using different approaches, from gRPC for private chats,
-to Redis for shared memory and RabbitMQ for the group chats implementation and discovery features.
+to Redis for shared memory and RabbitMQ for the group chats implementation and discovery features.  The aim of this project is to demonstrate a basic implementation of
+a distributed architecture and how different technologies work.  Therefore, the application works launching different clients on different terminals in the same machine
+instead of using a real distributed system.  Each client has, apart from its basic connection parameters (IP address and port), a client ID, that is generated randomly
+upon startup.  This unique ID is used to identify the client, and all connections are depending on it.  This means that, for instance, when connecting to a private chat,
+you will be asked to provide the client ID of the client you want to start the chat with.
+
+The group chats and the insult server are implemented using two different architectures of the provided by RabbitMQ, and they allow you to either connect or subscribe to 
+a group chat, that can be persistent or transient, and connect to an "insult service" that allows you to send messages to one random recipient from the clients connected
+to that service.  Regarding the discovery function, it can be performed through Redis, using the shared memory it provides, or asking the other clients directly through
+the RabbitMQ broker.  In both cases, it provides the connection parameters of all the connected clients.
 
 ## Requirements
 The project is implemented using the following:
