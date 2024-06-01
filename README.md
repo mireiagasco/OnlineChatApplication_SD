@@ -47,6 +47,14 @@ Example of discovery using RabbitMQ:
 ![image](https://github.com/Gpascual11/OnlineChatApplication_SD/assets/63343593/9fa2bc0a-b8b5-44d6-b575-a6831a6389b8)
 
 
+
+### Insult Service
+The insult service is implemented using a message queue pattern through RabbitMQ.  When a client connects to it, the UI is launched and gives the option to send an insult to the queue.
+Each insult queued is sent to only one of the connected clients. Example:
+
+![image](https://github.com/Gpascual11/OnlineChatApplication_SD/assets/63343593/514e9bae-db78-4e46-97de-dd071383e2a8)
+
+
 ## Requirements
 The project is implemented using the following:
 - Python v3.11.8 with grpcio v1.62.1
