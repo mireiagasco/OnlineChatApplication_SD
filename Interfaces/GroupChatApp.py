@@ -3,7 +3,7 @@ from tkinter import scrolledtext
 import threading
 import json
 
-from RabbitMQ.RabbitMQbroker import send_message, receive_messages
+from RabbitMQ.RabbitMQBroker import send_message, receive_messages
 
 # Connection parameters for RabbitMQ
 RABBITMQ_HOST = 'localhost'
