@@ -9,6 +9,15 @@ instead of using a real distributed system.  Each client has, apart from its bas
 upon startup.  This unique ID is used to identify the client, and all connections are depending on it.  This means that, for instance, when connecting to a private chat,
 you will be asked to provide the client ID of the client you want to start the chat with. 
 
+### Private Chats
+Private chats are directly implemented using gRPC, and, as stated earlier, they use the client ID to identify each client and the connection.  The chat itself is shown in
+a separate UI that presents the messages sent by the user on the right, and the ones received on the left.  Moreover, in case one of the clients disconects, a disconnect
+message is shown in the middle of the UI before closing it, as it serves no pourpose to have the UI open once one of the clients has ended the chat.
+
+![image](https://github.com/Gpascual11/OnlineChatApplication_SD/assets/63343593/694a5d11-9820-4a00-8a3c-951a1f290412)
+
+
+
 The group chats and the insult server are implemented using two different architectures of the provided by RabbitMQ, and they allow you to either connect or subscribe to 
 a group chat, that can be persistent or transient, and connect to an "insult service" that allows you to send messages to one random recipient from the clients connected
 to that service.  Regarding the discovery function, it can be performed through Redis, using the shared memory it provides, or asking the other clients directly through
