@@ -30,6 +30,10 @@ persistent or transient.  The persistent version will allow new clients that con
 achieved creating a history queue that will store all messages sent to persistent chats, and every time a new client connects, it will check that queue and read the messages
 that were sent to the chat before its arrival.
 
+Example of a group chat with three users:
+![image](https://github.com/Gpascual11/OnlineChatApplication_SD/assets/63343593/bce7da47-b1c8-4877-be47-8e82cb5c90b3)
+
+
 
 ### Discovery Service
 In order to obtain the connection parameters of the connected clients, we have implemented the discovery service.  It provides two options: Redis and RabbitMQ.  The firs one gets
