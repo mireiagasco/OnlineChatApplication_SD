@@ -11,7 +11,8 @@ RABBITMQ_HOST = 'localhost'
 RABBITMQ_PORT = 5672
 RABBITMQ_USERNAME = 'guest'
 RABBITMQ_PASSWORD = 'guest'
-EXCHANGE_NAME = 'group_chats'
+EXCHANGE_NAME_P = 'group_chats_p'
+EXCHANGE_NAME_T = 'group_chats_t'
 
 
 class GroupChatApp(tk.Tk):
@@ -64,7 +65,10 @@ class GroupChatApp(tk.Tk):
         if message:
             self.display_message(f"{self.username}: {message}", status='sent')
             routing_key = f"chat_{self.chat_id}_{'persistent' if self.persistent else 'transient'}"
-            RabbitMQBroker.send_message(EXCHANGE_NAME, routing_key=routing_key,
+
+            exchange_name = EXCHANGE_NAME_P if self.persistent else EXCHANGE_NAME_T
+
+            RabbitMQBroker.send_message(exchange_name, routing_key=routing_key,
                                         message={'sender': self.username, 'content': message},
                                         persistent=self.persistent)
             self.message_entry.delete(0, tk.END)
@@ -72,7 +76,8 @@ class GroupChatApp(tk.Tk):
     def receive_messages(self, client_id, persistent):
         queue_name = f"chat_{self.chat_id}_{client_id}_{'persistent' if persistent else 'transient'}"
         routing_key = f"chat_{self.chat_id}_{'persistent' if persistent else 'transient'}"
-        RabbitMQBroker.receive_messages(exchange_name='group_chats', queue_name=queue_name, routing_key=routing_key,
+        exchange_name = 'group_chats_p' if persistent else 'group_chats_t'
+        RabbitMQBroker.receive_messages(exchange_name=exchange_name, queue_name=queue_name, routing_key=routing_key,
                                         callback=self.callback, persistent=persistent)
 
     def callback(self, ch, method, properties, body):
